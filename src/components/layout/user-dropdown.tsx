@@ -1,11 +1,9 @@
 import Link from "next/link"
-import { signOut } from "next-auth/react"
-import { LogOut, User, UserCog, ChevronsUpDown } from "lucide-react"
+import { LogOut, User, UserCog } from "lucide-react"
 
 import type { DictionaryType } from "@/lib/get-dictionary"
 import type { LocaleType } from "@/types"
 
-import { userData } from "@/data/user"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { getInitials } from "@/lib/utils"
@@ -22,6 +20,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useSidebar, SidebarMenuButton } from "@/components/ui/sidebar"
+import { useAuthStore } from "@/stores/auth-store"
+import { getAbsoluteUrl } from "@/lib/api/client"
 
 export function UserDropdown({
   dictionary,
@@ -31,6 +31,14 @@ export function UserDropdown({
   locale: LocaleType
 }) {
   const { isMobile } = useSidebar()
+  const user = useAuthStore((state) => state.user)
+
+  if (!user) {
+    return null
+  }
+
+  const name = user.name || user.firstName || user.username || user.email || ""
+  const initials = getInitials(name)
 
   return (
     <DropdownMenu>
@@ -40,16 +48,9 @@ export function UserDropdown({
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
           <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage src={userData?.avatar} alt={userData?.name} />
-            <AvatarFallback className="rounded-lg">
-              {userData?.name && getInitials(userData.name)}
-            </AvatarFallback>
+            <AvatarImage src={getAbsoluteUrl(user.avatar)} alt={name} />
+            <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
           </Avatar>
-          {/* <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="truncate font-semibold">{userData?.name}</span>
-            <span className="truncate text-xs">{userData?.email}</span>
-          </div>
-          <ChevronsUpDown className="ml-auto size-4 group-data-[collapsible=icon]:hidden" /> */}
         </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -60,15 +61,13 @@ export function UserDropdown({
       >
         <DropdownMenuLabel className="flex gap-2">
           <Avatar>
-            <AvatarImage src={userData?.avatar} alt="Avatar" />
-            <AvatarFallback className="bg-transparent">
-              {userData?.name && getInitials(userData.name)}
-            </AvatarFallback>
+            <AvatarImage src={getAbsoluteUrl(user.avatar)} alt="Avatar" />
+            <AvatarFallback className="bg-transparent">{initials}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col overflow-hidden">
-            <p className="text-sm font-medium truncate">John Doe</p>
+            <p className="text-sm font-medium truncate">{name}</p>
             <p className="text-xs text-muted-foreground font-semibold truncate">
-              {userData?.email}
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -92,7 +91,7 @@ export function UserDropdown({
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem onClick={() => useAuthStore.getState().clear()}>
           <LogOut className="me-2 size-4" />
           {dictionary.navigation.userNav.signOut}
         </DropdownMenuItem>

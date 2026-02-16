@@ -13,6 +13,8 @@ import { ensureLocalizedPathname } from "@/lib/i18n"
 import { ensureRedirectPathname } from "@/lib/utils"
 
 import { toast } from "@/hooks/use-toast"
+import { register as registerUser } from "@/lib/api/auth"
+import { useAuthStore } from "@/stores/auth-store"
 import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
@@ -30,6 +32,7 @@ export function RegisterForm() {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
+  const tenantSlug = useAuthStore((state) => state.tenantSlug)
 
   const form = useForm<RegisterFormType>({
     resolver: zodResolver(RegisterSchema),
@@ -40,52 +43,36 @@ export function RegisterForm() {
   const { isSubmitting, isDirty } = form.formState
   const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
 
+  const setAuthPayload = useAuthStore((state) => state.setAuthPayload)
+
   async function onSubmit(data: RegisterFormType) {
     const { firstName, lastName, username, email, password } = data
 
     try {
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          username,
-          email,
-          password,
-        }),
+      const payload = await registerUser({
+        firstName,
+        lastName,
+        username,
+        email,
+        password,
+        tenantSlug:
+          tenantSlug ?? process.env.NEXT_PUBLIC_DEFAULT_TENANT_SLUG ?? undefined,
       })
 
-      if (res && res.status >= 400) {
-        const {
-          issues,
-          message,
-        }: {
-          issues?: { path: (keyof RegisterFormType)[]; message: string }[]
-          message?: string
-        } = await res.json()
+      // Automatically sign in
+      setAuthPayload(payload)
 
-        if (!issues) throw new Error(message ?? "An unknown error occurred.")
+      toast({
+        title: "Register Successful",
+        description: "Your account has been created and you are now signed in.",
+      })
 
-        // Set errors in React Hook Form based on server response
-        issues.forEach((issue) => {
-          const field = issue.path[0]
-          form.setError(field, { type: "manual", message: issue.message })
-        })
-      } else {
-        toast({ title: "Register Successful" })
-        router.push(
-          ensureLocalizedPathname(
-            // Include redirect pathname if available, otherwise default to "/sign-in"
-            redirectPathname
-              ? ensureRedirectPathname("/sign-in", redirectPathname)
-              : "/sign-in",
-            locale
-          )
+      router.push(
+        ensureLocalizedPathname(
+          redirectPathname || "/dashboards/analytics",
+          locale
         )
-      }
+      )
     } catch (error) {
       toast({
         variant: "destructive",
@@ -173,7 +160,7 @@ export function RegisterForm() {
         </div>
 
         <ButtonLoading isLoading={isSubmitting} disabled={isDisabled}>
-          Sign In with Email
+          Create Account
         </ButtonLoading>
         <div className="-mt-4 text-center text-sm">
           Already have an account?{" "}

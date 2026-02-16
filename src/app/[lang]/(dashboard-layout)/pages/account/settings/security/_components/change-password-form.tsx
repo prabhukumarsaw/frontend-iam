@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 
 import type { ChangePasswordFormType } from "../../../types"
 
-import { ChangePasswordSchema } from "../_schemas/chnage-password-schema"
+import { ChangePasswordSchema } from "../_schemas/change-password-schema"
 
 import { ButtonLoading } from "@/components/ui/button"
 import {
@@ -17,6 +17,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { apiRequest } from "@/lib/api/client"
+import { toast } from "@/hooks/use-toast"
 
 export function ChangePasswordForm() {
   const form = useForm<ChangePasswordFormType>({
@@ -30,7 +32,31 @@ export function ChangePasswordForm() {
 
   const { isSubmitting } = form.formState
 
-  async function onSubmit(_data: ChangePasswordFormType) {}
+  async function onSubmit(data: ChangePasswordFormType) {
+    try {
+      await apiRequest("/auth/password/change", {
+        method: "POST",
+        body: {
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword,
+        },
+      })
+
+      toast({
+        title: "Password changed",
+        description: "Your password has been successfully updated.",
+      })
+
+      form.reset()
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description:
+          error instanceof Error ? error.message : "Something went wrong",
+      })
+    }
+  }
 
   return (
     <Form {...form}>

@@ -13,6 +13,8 @@ import { ensureLocalizedPathname } from "@/lib/i18n"
 import { ensureRedirectPathname } from "@/lib/utils"
 
 import { toast } from "@/hooks/use-toast"
+import { requestPasswordReset } from "@/lib/api/auth"
+import { useAuthStore } from "@/stores/auth-store"
 import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
@@ -27,6 +29,7 @@ import { Input } from "@/components/ui/input"
 export function ForgotPasswordForm() {
   const params = useParams()
   const searchParams = useSearchParams()
+  const tenantSlug = useAuthStore((state) => state.tenantSlug)
 
   const form = useForm<ForgotPasswordFormType>({
     resolver: zodResolver(ForgotPasswordSchema),
@@ -40,8 +43,14 @@ export function ForgotPasswordForm() {
   const { isSubmitting, isDirty } = form.formState
   const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
 
-  async function onSubmit(_data: ForgotPasswordFormType) {
+  async function onSubmit(data: ForgotPasswordFormType) {
     try {
+      await requestPasswordReset({
+        email: data.email,
+        tenantSlug:
+          tenantSlug ?? process.env.NEXT_PUBLIC_DEFAULT_TENANT_SLUG ?? undefined,
+      })
+
       toast({
         title: "Check your email",
         description:

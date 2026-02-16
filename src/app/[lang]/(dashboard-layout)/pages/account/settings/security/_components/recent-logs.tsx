@@ -12,26 +12,23 @@ import {
 } from "@/components/ui/card"
 import { RecentLogsTable } from "./recent-logs-table"
 
-export function RecentLogs() {
+interface RecentLogsProps {
+  sessions: any[]
+  isLoading?: boolean
+}
+
+export function RecentLogs({ sessions, isLoading }: RecentLogsProps) {
   return (
     <Card>
-      <CardHeader className="flex-row justify-between items-center gap-x-3 space-y-0">
-        <div className="space-y-1.5">
-          <CardTitle>Recent Logs</CardTitle>
-          <CardDescription>
-            View recent activity on your account. Check for any unusual or
-            suspicious actions.
-          </CardDescription>
-        </div>
-        <Link
-          href="/"
-          className={cn(buttonVariants({ variant: "link" }), "size-fit p-0")}
-        >
-          See All
-        </Link>
+      <CardHeader>
+        <CardTitle>Recent Logs</CardTitle>
+        <CardDescription>
+          View your latest account activity and sign-in history to ensure your
+          account security.
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <RecentLogsTable />
+        <RecentLogsTable sessions={sessions} isLoading={isLoading} />
       </CardContent>
     </Card>
   )

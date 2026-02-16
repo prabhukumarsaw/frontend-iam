@@ -10,8 +10,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function getInitials(fullName: string) {
-  if (fullName.length === 0) return ""
+export function getInitials(fullName?: string | null) {
+  if (!fullName || fullName.length === 0) return ""
 
   // Split the name by spaces
   const names = fullName.split(" ")

@@ -1,11 +1,11 @@
 {
-  "name": "shadboard-nextjs-full-kit",
+  "name": "prabhuLabs-frontend",
   "version": "1.0.0",
   "license": "MIT",
   "private": true,
   "author": {
-    "name": "Layth Alqadhi",
-    "url": "https://github.com/LaythAlqadhi"
+    "name": "Prabhu Kumar Saw",
+    "url": "https://github.com/prabhukumarsaw"
   },
   "scripts": {
     "dev": "next dev --turbopack",
@@ -13,9 +13,7 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "format": "prettier --ignore-path .gitignore --write .",
-    "migrate": "pnpm exec prisma migrate dev",
-    "postinstall": "prisma generate"
+    "format": "prettier --ignore-path .gitignore --write ."
   },
   "engines": {
     "node": ">=22",
@@ -86,6 +84,7 @@
     "embla-carousel-react": "8.5.1",
     "emoji-picker-react": "4.12.2",
     "input-otp": "1.4.2",
+    "js-cookie": "^3.0.5",
     "lucide-react": "0.446.0",
     "negotiator": "0.6.3",
     "next": "15.2.8",
@@ -104,7 +103,8 @@
     "sonner": "2.0.2",
     "tailwind-merge": "2.5.2",
     "vaul": "1.1.2",
-    "zod": "3.23.8"
+    "zod": "3.23.8",
+    "zustand": "4"
   },
   "devDependencies": {
     "@eslint/compat": "1.2.7",
@@ -112,6 +112,7 @@
     "@tailwindcss/postcss": "4.0.17",
     "@tailwindcss/typography": "0.5.15",
     "@types/eslint__eslintrc": "2.1.2",
+    "@types/js-cookie": "^3.0.6",
     "@types/mdx": "2.0.13",
     "@types/negotiator": "0.6.3",
     "@types/node": "20",

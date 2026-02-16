@@ -3,12 +3,9 @@
 import Link from "next/link"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
 
 import type { LocaleType, SignInFormType } from "@/types"
-
-import { userData } from "@/data/user"
 
 import { SignInSchema } from "@/schemas/sign-in-schema"
 
@@ -16,6 +13,8 @@ import { ensureLocalizedPathname } from "@/lib/i18n"
 import { ensureRedirectPathname } from "@/lib/utils"
 
 import { toast } from "@/hooks/use-toast"
+import { login } from "@/lib/api/auth"
+import { useAuthStore } from "@/stores/auth-store"
 import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
@@ -33,6 +32,7 @@ export function SignInForm() {
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
+  const tenantSlug = useAuthStore((state) => state.tenantSlug)
 
   const redirectPathname =
     searchParams.get("redirectTo") ||
@@ -42,8 +42,8 @@ export function SignInForm() {
   const form = useForm<SignInFormType>({
     resolver: zodResolver(SignInSchema),
     defaultValues: {
-      email: userData.email,
-      password: userData.password,
+      identifier: "",
+      password: "",
     },
   })
 
@@ -52,25 +52,31 @@ export function SignInForm() {
   const isDisabled = isSubmitting // Disable button if form is submitting
 
   async function onSubmit(data: SignInFormType) {
-    const { email, password } = data
+    const { identifier, password } = data
+    const isEmail = identifier.includes("@")
 
     try {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email,
+      const payload = await login({
+        email: isEmail ? identifier : undefined,
+        username: !isEmail ? identifier : undefined,
         password,
+        tenantSlug: tenantSlug ?? process.env.NEXT_PUBLIC_DEFAULT_TENANT_SLUG ?? "default",
       })
 
-      if (result && result.error) {
-        throw new Error(result.error)
-      }
+      // Update store and cookies
+      useAuthStore.getState().setAuthPayload(payload, tenantSlug)
+
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully signed in.",
+      })
 
       router.push(redirectPathname)
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Sign In Failed",
-        description: error instanceof Error ? error.message : undefined,
+        description: error instanceof Error ? error.message : "Invalid credentials",
       })
     }
   }
@@ -81,14 +87,14 @@ export function SignInForm() {
         <div className="grid grow gap-2">
           <FormField
             control={form.control}
-            name="email"
+            name="identifier"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>Email or Username</FormLabel>
                 <FormControl>
                   <Input
-                    type="email"
-                    placeholder="name@example.com"
+                    type="text"
+                    placeholder="name@example.com or username"
                     {...field}
                   />
                 </FormControl>
@@ -108,9 +114,9 @@ export function SignInForm() {
                       // Include redirect pathname if available, otherwise default to "/forgot-password"
                       redirectPathname
                         ? ensureRedirectPathname(
-                            "/forgot-password",
-                            redirectPathname
-                          )
+                          "/forgot-password",
+                          redirectPathname
+                        )
                         : "/forgot-password",
                       locale
                     )}
@@ -129,7 +135,7 @@ export function SignInForm() {
         </div>
 
         <ButtonLoading isLoading={isSubmitting} disabled={isDisabled}>
-          Sign In with Email
+          Sign In
         </ButtonLoading>
         <div className="-mt-4 text-center text-sm">
           Don&apos;t have an account?{" "}

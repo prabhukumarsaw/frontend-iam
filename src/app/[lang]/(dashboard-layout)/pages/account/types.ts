@@ -6,9 +6,9 @@ import type { ProfileInfoSchema } from "./settings/_schemas/profile-info-form-sc
 import type { NotificationPreferencesSchema } from "./settings/notifications/_schemas/notifications-preferenes-schema"
 import type { ChangePlanSchema } from "./settings/plan-and-billing/_schemas/change-plan-schema"
 import type { PaymentMethodSchema } from "./settings/plan-and-billing/_schemas/payment-method-schema"
-import type { AccountRecoveryOptionsSchema } from "./settings/security/_schemas/account-recovery-options-schema"
-import type { ChangePasswordSchema } from "./settings/security/_schemas/chnage-password-schema"
-import type { SecurityPreferencesSchema } from "./settings/security/_schemas/security-preferences-form-schema"
+import type { AccountRecoveryOptionsSchema } from "@/app/[lang]/(dashboard-layout)/pages/account/settings/security/_schemas/account-recovery-options-schema"
+import type { ChangePasswordSchema } from "@/app/[lang]/(dashboard-layout)/pages/account/settings/security/_schemas/change-password-schema"
+import type { SecurityPreferencesSchema } from "@/app/[lang]/(dashboard-layout)/pages/account/settings/security/_schemas/security-preferences-form-schema"
 
 export interface UserType {
   id: string
@@ -33,7 +33,7 @@ export interface UserType {
   organization: string
   twoFactorAuth: boolean
   loginAlerts: boolean
-  accountReoveryOption?: "email" | "sms" | "codes"
+  accountRecoveryOption?: "email" | "sms" | "codes"
   connections: number
   followers: number
 }

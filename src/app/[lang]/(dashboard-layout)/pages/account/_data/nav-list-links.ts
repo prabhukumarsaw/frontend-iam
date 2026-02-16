@@ -15,4 +15,9 @@ export const linksData = [
     href: "/pages/account/settings/notifications",
     title: "Notifications",
   },
+  {
+    href: "/pages/account/settings/tenant-management",
+    title: "Tenant Management",
+    superAdminOnly: true,
+  },
 ]

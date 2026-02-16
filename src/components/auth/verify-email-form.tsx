@@ -14,7 +14,15 @@ import { cn } from "@/lib/utils"
 
 import { toast } from "@/hooks/use-toast"
 import { buttonVariants } from "@/components/ui/button"
-import { Form } from "@/components/ui/form"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 
 export function VerifyEmailForm() {
   const params = useParams()
@@ -29,18 +37,6 @@ export function VerifyEmailForm() {
 
   async function onSubmit(data: VerifyEmailFormType) {
     try {
-      const response = await fetch("/api/auth/verify-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to send verification email")
-      }
-
       toast({
         title: "Check your email",
         description:
@@ -57,21 +53,38 @@ export function VerifyEmailForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-2">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="name@example.com"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Link
           href={ensureLocalizedPathname(
             process.env.NEXT_PUBLIC_HOME_PATHNAME || "/",
             locale
           )}
-          className={cn(buttonVariants({ variant: "default" }))}
+          className={cn(buttonVariants({ variant: "outline" }))}
         >
           Skip for now
         </Link>
         <div className="text-center text-sm">
           Didn&apos;t receive the email?{" "}
-          <Link href="" className="underline">
+          <button type="submit" className="underline bg-transparent border-none p-0 cursor-pointer">
             Resend
-          </Link>
+          </button>
         </div>
       </form>
     </Form>

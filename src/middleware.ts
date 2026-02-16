@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-import { getToken } from "next-auth/jwt"
 
 import type { NextRequest } from "next/server"
 
@@ -39,7 +38,7 @@ export async function middleware(request: NextRequest) {
 
   // Handle authentication for protected and guest routes
   if (isNotPublic) {
-    const token = await getToken({ req: request })
+    const token = request.cookies.get("auth-token")?.value
     const isAuthenticated = !!token
     const isGuest = isGuestRoute(pathnameWithoutLocale)
     const isProtected = !isGuest

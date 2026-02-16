@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 
@@ -30,10 +30,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useAuthStore } from "@/stores/auth-store"
+import { updateProfile } from "@/lib/api/auth"
+import { uploadFile } from "@/lib/api/files"
+import { toast } from "@/hooks/use-toast"
+import { ToastAction } from "@/components/ui/toast"
+import { getAbsoluteUrl } from "@/lib/api/client"
+import { useParams, useRouter } from "next/navigation"
 
 export function ProfileInfoForm({ user }: { user: UserType }) {
+  const router = useRouter()
+  const params = useParams()
+  const lang = params.lang as string
+  const updateUserStore = useAuthStore((state) => state.updateUser)
   const [photoPreview, setPhotoPreview] = useState<string | undefined>(
-    user?.avatar
+    getAbsoluteUrl(user?.avatar)
   )
 
   const form = useForm<ProfileInfoFormType>({
@@ -47,11 +58,79 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
   const { isSubmitting, isDirty } = form.formState
   const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
 
-  async function onSubmit(_data: ProfileInfoFormType) {}
+  async function onSubmit(data: ProfileInfoFormType) {
+    try {
+      // Map frontend fields to backend schema
+      const updateData: any = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        username: data.username,
+        email: data.email,
+        phone: data.phoneNumber,
+        state: data.state,
+        country: data.country,
+        address: data.address,
+        zipCode: data.zipCode,
+        locale: data.language,
+        timezone: data.timeZone,
+        currency: data.currency,
+        organization: data.organization,
+      }
+
+      // Handle avatar if provided (as a file)
+      if (data.avatar instanceof File) {
+        toast({
+          title: "Uploading Image...",
+          description: "Please wait while we upload your profile picture.",
+        })
+        const fileRes = await uploadFile(data.avatar, true)
+        updateData.avatar = fileRes.url
+      }
+
+      const updatedUser = await updateProfile(updateData)
+
+      // Update the global auth store
+      updateUserStore(updatedUser)
+
+      const profileUrl = `/${lang}/pages/account/profile`
+
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been successfully saved.",
+        action: (
+          <ToastAction
+            altText="View Profile"
+            onClick={() => router.push(profileUrl)}
+          >
+            View Profile
+          </ToastAction>
+        ),
+      })
+
+      form.reset(data) // Mark form as pristine with new data
+
+      // Redirect after a short delay for better UX
+      setTimeout(() => {
+        router.push(profileUrl)
+      }, 1500)
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description:
+          error instanceof Error ? error.message : "Something went wrong",
+      })
+    }
+  }
+
+  // Sync photoPreview when user prop changes (e.g. after update or initial load if hydration differs)
+  useEffect(() => {
+    setPhotoPreview(getAbsoluteUrl(user?.avatar))
+  }, [user?.avatar])
 
   function handleResetForm() {
     form.reset() // Reset the form to the initial state
-    setPhotoPreview(user?.avatar) // Reset photoPreview to the initial state
+    setPhotoPreview(getAbsoluteUrl(user?.avatar)) // Reset photoPreview to the initial state with absolute URL
   }
 
   function handleUploadPhoto(e: ChangeEvent<HTMLInputElement>) {
@@ -69,7 +148,7 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
   }
 
   function handleRemovePhoto() {
-    form.resetField("avatar") // Reset the "avatar" field in the form to its initial state
+    form.setValue("avatar", null as any, { shouldDirty: true })
     setPhotoPreview(undefined)
   }
 
@@ -79,7 +158,14 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
         <div className="flex items-center gap-x-4">
           <Avatar className="size-22">
             <AvatarImage src={photoPreview} alt="Profile Avatar" />
-            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+            <AvatarFallback>
+              {getInitials(
+                user.name ||
+                `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
+                user.username ||
+                user.email
+              )}
+            </AvatarFallback>
           </Avatar>
           <div className="grid gap-2">
             <FormField

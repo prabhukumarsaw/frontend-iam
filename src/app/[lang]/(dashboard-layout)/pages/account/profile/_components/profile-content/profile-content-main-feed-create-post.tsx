@@ -1,21 +1,26 @@
-import { ImageIcon, MapPin, Video } from "lucide-react"
+"use client"
 
-import { userData } from "@/data/user"
+import { ImageIcon, MapPin, Video } from "lucide-react"
 
 import { getInitials } from "@/lib/utils"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { useAuthStore } from "@/stores/auth-store"
 
 export function ProfileContentCreatePost() {
+  const user = useAuthStore((state) => state.user)
+  const name = user?.name ?? user?.email ?? "User"
+  const avatar = (user as { avatar?: string | null } | null)?.avatar ?? undefined
+
   return (
     <Card asChild>
       <article aria-label="Create a post">
         <div className="grid grid-cols-[2.5rem__auto] gap-x-2 p-6">
           <Avatar>
-            <AvatarImage src={userData.avatar} alt="" />
-            <AvatarFallback>{getInitials(userData.name)}</AvatarFallback>
+            <AvatarImage src={avatar} alt="" />
+            <AvatarFallback>{getInitials(name)}</AvatarFallback>
           </Avatar>
           <div className="flex gap-x-1.5">
             <Button

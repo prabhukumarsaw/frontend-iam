@@ -20,6 +20,10 @@ import {
 } from "@/components/ui/form"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
+import { useAuthStore } from "@/stores/auth-store"
+import { apiRequest } from "@/lib/api/client"
+import { toast } from "@/hooks/use-toast"
+
 interface AccountRecoveryOptionsFormProps extends ComponentProps<"form"> {
   user: UserType
 }
@@ -27,17 +31,44 @@ interface AccountRecoveryOptionsFormProps extends ComponentProps<"form"> {
 export function AccountRecoveryOptionsForm({
   user,
 }: AccountRecoveryOptionsFormProps) {
+  const updateUserStore = useAuthStore((state) => state.updateUser)
   const form = useForm<AccountRecoveryOptionsFormType>({
     resolver: zodResolver(AccountRecoveryOptionsSchema),
     defaultValues: {
-      option: user.accountReoveryOption,
+      option: user.accountRecoveryOption as any,
     },
   })
 
   const { isSubmitting, isDirty } = form.formState
   const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
 
-  function onSubmit(_data: AccountRecoveryOptionsFormType) {}
+  async function onSubmit(data: AccountRecoveryOptionsFormType) {
+    try {
+      const updatedUser = await apiRequest("/auth/me", {
+        method: "PATCH",
+        body: {
+          accountRecoveryOption: data.option,
+        },
+      })
+
+      // Update the global auth store
+      updateUserStore(updatedUser)
+
+      toast({
+        title: "Preferences saved",
+        description: "Your recovery options have been successfully updated.",
+      })
+
+      form.reset(data)
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description:
+          error instanceof Error ? error.message : "Something went wrong",
+      })
+    }
+  }
 
   return (
     <Form {...form}>

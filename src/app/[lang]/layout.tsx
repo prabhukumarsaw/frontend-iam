@@ -1,8 +1,6 @@
 import { Lato, Noto_Sans_Devanagari } from "next/font/google"
-import { getServerSession } from "next-auth"
 
 import { i18n } from "@/configs/i18n"
-import { authOptions } from "@/configs/next-auth"
 import { cn } from "@/lib/utils"
 
 import "../globals.css"
@@ -18,13 +16,20 @@ import { Toaster } from "@/components/ui/toaster"
 
 // Define metadata for the application
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
+const appBaseUrl =
+  process.env.BASE_URL ||
+  process.env.NEXTAUTH_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "http://localhost:3000"
+
 export const metadata: Metadata = {
   title: {
     template: "%s | Shadboard",
     default: "Shadboard",
   },
   description: "",
-  metadataBase: new URL(process.env.BASE_URL as string),
+  // Guard against invalid URLs in development to avoid runtime crashes.
+  metadataBase: new URL(appBaseUrl),
 }
 
 // Define fonts for the application
@@ -50,7 +55,6 @@ export default async function RootLayout(props: {
 
   const { children } = props
 
-  const session = await getServerSession(authOptions)
   const direction = i18n.localeDirection[params.lang]
 
   return (
@@ -63,7 +67,7 @@ export default async function RootLayout(props: {
           hindiFont.variable // Include Hindi font variable
         )}
       >
-        <Providers locale={params.lang} direction={direction} session={session}>
+        <Providers locale={params.lang} direction={direction}>
           {children}
           <Toaster />
           <Sonner />

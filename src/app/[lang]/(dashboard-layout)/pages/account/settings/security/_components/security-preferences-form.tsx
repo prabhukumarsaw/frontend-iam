@@ -18,6 +18,9 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form"
+import { useAuthStore } from "@/stores/auth-store"
+import { apiRequest } from "@/lib/api/client"
+import { toast } from "@/hooks/use-toast"
 
 interface SecurityPreferencesFormProps extends ComponentProps<"form"> {
   user: UserType
@@ -26,6 +29,7 @@ interface SecurityPreferencesFormProps extends ComponentProps<"form"> {
 export function SecurityPreferencesForm({
   user,
 }: SecurityPreferencesFormProps) {
+  const updateUserStore = useAuthStore((state) => state.updateUser)
   const form = useForm<SecurityPreferencesFormType>({
     resolver: zodResolver(SecurityPreferencesSchema),
     defaultValues: {
@@ -37,7 +41,34 @@ export function SecurityPreferencesForm({
   const { isSubmitting, isDirty } = form.formState
   const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
 
-  function onSubmit(_data: SecurityPreferencesFormType) {}
+  async function onSubmit(data: SecurityPreferencesFormType) {
+    try {
+      const updatedUser = await apiRequest("/auth/me", {
+        method: "PATCH",
+        body: {
+          mfaEnabled: data.twoFactorAuth,
+          loginAlerts: data.loginAlerts,
+        },
+      })
+
+      // Update the global auth store
+      updateUserStore(updatedUser)
+
+      toast({
+        title: "Preferences saved",
+        description: "Your security preferences have been successfully updated.",
+      })
+
+      form.reset(data)
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description:
+          error instanceof Error ? error.message : "Something went wrong",
+      })
+    }
+  }
 
   return (
     <Form {...form}>

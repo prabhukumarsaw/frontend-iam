@@ -1,12 +1,21 @@
-import { userData } from "@/data/user"
+"use client"
 
 import { ProfileContentIntroItem } from "./profile-content-info-intro-item"
+import { useAuthStore } from "@/stores/auth-store"
 
 export function ProfileContentIntroList() {
-  const userInfo = userData
-  const location = userInfo.state
-    ? userInfo.state + ", " + userInfo.country
-    : userInfo.country
+  const user = useAuthStore((state) => state.user)
+  const role = (user as { role?: string } | null)?.role ?? "User"
+  const organization =
+    (user as { organization?: string } | null)?.organization ?? ""
+  const state = (user as { state?: string } | null)?.state
+  const country = (user as { country?: string } | null)?.country
+  const email = user?.email ?? ""
+  const phone = (user as { phoneNumber?: string } | null)?.phoneNumber ?? ""
+  const language = (user as { language?: string } | null)?.language ?? ""
+
+  const location =
+    state && country ? `${state}, ${country}` : country ?? state ?? ""
 
   return (
     <ul className="grid gap-y-3">
@@ -14,8 +23,12 @@ export function ProfileContentIntroList() {
         title="Works as a"
         value={
           <>
-            {userInfo.role} <span className="text-foreground"> at </span>{" "}
-            {userInfo.organization}
+            {role}
+            {organization && (
+              <>
+                <span className="text-foreground"> at </span> {organization}
+              </>
+            )}
           </>
         }
         iconName="BriefcaseBusiness"
@@ -28,18 +41,18 @@ export function ProfileContentIntroList() {
 
       <ProfileContentIntroItem
         title="Email"
-        value={userInfo.email}
+        value={email}
         iconName="Mail"
       />
 
       <ProfileContentIntroItem
         title="Phone Number"
-        value={userInfo.phoneNumber}
+        value={phone}
         iconName="Phone"
       />
       <ProfileContentIntroItem
         title="Language"
-        value={userInfo.language}
+        value={language}
         iconName="Languages"
       />
     </ul>

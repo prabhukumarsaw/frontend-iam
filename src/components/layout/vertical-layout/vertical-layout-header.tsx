@@ -31,7 +31,7 @@ import { Input } from "@/components/ui/input"
 import { Keyboard } from "@/components/ui/keyboard"
 import { ProjectSwitcher } from "../project-switcher"
 import { CommandMenu } from "../command-menu"
-import { teams } from "@/configs/teams"
+// import { teams } from "@/configs/teams"
 
 export function VerticalLayoutHeader({
   dictionary,
@@ -57,7 +57,7 @@ export function VerticalLayoutHeader({
             />
           </Link>
           <div className="hidden md:flex items-center gap-2">
-            <ProjectSwitcher teams={teams} />
+            <ProjectSwitcher />
             <SidebarTrigger className="h-8 w-8 hover:bg-muted transition-colors rounded-lg" />
           </div>
           <div className="h-4 w-px bg-sidebar-border mx-1 hidden md:block" />

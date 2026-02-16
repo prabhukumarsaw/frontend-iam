@@ -1,67 +1,106 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
-import { UserPen } from "lucide-react"
+import { MessageSquare, MoreHorizontal, UserPen, UserPlus } from "lucide-react"
 
 import type { LocaleType } from "@/types"
-
-import { userData } from "@/data/user"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { cn, formatNumberToCompact, getInitials } from "@/lib/utils"
 
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { useAuthStore } from "@/stores/auth-store"
+import { getAbsoluteUrl } from "@/lib/api/client"
 
 export function ProfileHeader({ locale }: { locale: LocaleType }) {
+  const user = useAuthStore((state) => state.user)
+
+  const name = user?.name ?? user?.email ?? "User"
+  const avatar = (user as { avatar?: string | null } | null)?.avatar ?? undefined
+  const state = (user as { state?: string } | null)?.state
+  const country = (user as { country?: string } | null)?.country
+  const followers = (user as { followers?: number } | null)?.followers ?? 0
+  const connections = (user as { connections?: number } | null)?.connections ?? 0
+  const background = (user as { background?: string } | null)?.background
+
   return (
-    <section className="bg-background border-y border-border">
-      <AspectRatio ratio={5 / 1} className="bg-muted">
-        {userData.background && (
-          <Image
-            src={userData.background}
-            fill
-            className="h-full w-full object-cover"
-            alt="Profile Background"
-          />
-        )}
-      </AspectRatio>
-      <div className="relative w-full flex flex-col items-center gap-2 p-4 md:flex-row">
-        <Avatar className="size-32 -mt-20 md:size-40">
-          <AvatarImage
-            src={userData.avatar}
-            alt="Profile Avatar"
-            className="border-4 border-background"
-          />
-          <AvatarFallback className="border-4 border-background">
-            {getInitials(userData.name)}
-          </AvatarFallback>
-        </Avatar>
-        <Link
-          href={ensureLocalizedPathname("/pages/account/settings", locale)}
-          className={cn(
-            buttonVariants({ variant: "ghost", size: "icon" }),
-            "absolute top-4 end-4"
+    <section className="bg-background border-b border-border">
+      <div className="relative">
+        <AspectRatio ratio={6 / 1} className="bg-muted overflow-hidden">
+          {background ? (
+            <Image
+              src={background}
+              fill
+              className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+              alt="Profile Background"
+              priority
+            />
+          ) : (
+            <div className="h-full w-full bg-gradient-to-r from-primary/20 to-secondary/20" />
           )}
-          aria-label="Edit your profile"
-        >
-          <UserPen className="size-4" />
-        </Link>
-        <div className="text-center md:text-start">
-          <div>
-            <h1 className="text-2xl font-bold line-clamp-1">{userData.name}</h1>
-            <p className="text-muted-foreground line-clamp-1">
-              {userData.state && userData.state + ", "}
-              {userData.country}
-            </p>
+        </AspectRatio>
+      </div>
+
+      <div className="container mx-auto px-4 lg:px-8">
+        <div className="relative flex flex-col gap-6 pb-6 pt-2 md:flex-row md:items-end md:justify-between">
+          <div className="flex flex-col items-center gap-6 md:flex-row md:items-end">
+            <Avatar className="size-32 -mt-16 ring-4 ring-background md:size-40 md:-mt-20">
+              <AvatarImage
+                src={getAbsoluteUrl(avatar)}
+                alt={name}
+                className="object-cover"
+              />
+              <AvatarFallback className="text-3xl">
+                {getInitials(name)}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="flex flex-col items-center text-center md:items-start md:pb-1 md:text-start">
+              <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">
+                {name}
+              </h1>
+              <p className="mt-1 text-muted-foreground font-medium">
+                {state && `${state}, `}
+                {country || "Planet Earth"}
+              </p>
+              <div className="mt-4 flex items-center gap-4 text-sm font-semibold">
+                <div className="flex gap-1 hover:text-primary cursor-pointer transition-colors">
+                  <span className="text-foreground">{formatNumberToCompact(followers)}</span>
+                  <span className="text-muted-foreground">Followers</span>
+                </div>
+                <div className="flex gap-1 hover:text-primary cursor-pointer transition-colors">
+                  <span className="text-foreground">{formatNumberToCompact(connections)}</span>
+                  <span className="text-muted-foreground">Connections</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="inline-flex w-full">
-            <p className="text-primary after:content-['\00b7'] after:mx-1">
-              {formatNumberToCompact(userData.followers)} followers
-            </p>
-            <p className="text-primary">
-              {formatNumberToCompact(userData.connections)} connections
-            </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 md:pb-1 lg:gap-3">
+            <Button variant="default" className="gap-2 rounded-full px-6 shadow-sm shadow-primary/20">
+              <UserPlus className="size-4" />
+              Follow
+            </Button>
+            <Button variant="outline" className="gap-2 rounded-full px-6 bg-background/50 backdrop-blur-sm">
+              <MessageSquare className="size-4" />
+              Message
+            </Button>
+            <Link
+              href={ensureLocalizedPathname("/pages/account/settings", locale)}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "icon" }),
+                "rounded-full bg-background/50 backdrop-blur-sm"
+              )}
+              aria-label="Edit Profile"
+            >
+              <UserPen className="size-4" />
+            </Link>
+            <Button variant="outline" size="icon" className="rounded-full bg-background/50 backdrop-blur-sm">
+              <MoreHorizontal className="size-4" />
+            </Button>
           </div>
         </div>
       </div>

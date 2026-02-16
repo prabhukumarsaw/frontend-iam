@@ -49,7 +49,7 @@ import { DynamicIcon } from "@/components/dynamic-icon"
 import { CommandMenu } from "./command-menu"
 import { ProjectSwitcher } from "./project-switcher"
 import { UserDropdown } from "./user-dropdown"
-import { teams } from "@/configs/teams"
+// import { teams } from "@/configs/teams"
 import { primaryNavItems } from "./sidebar-primary"
 
 export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
@@ -61,7 +61,7 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
 
   const { settings } = useSettings()
   const direction = i18n.localeDirection[locale]
-  const isRTL = direction === "rtl" || false
+  const isRTL = (direction as string) === "rtl"
   const isHoizontalAndDesktop = settings.layout === "horizontal" && !isMobile
 
   // If the layout is horizontal and not on mobile, don't render the sidebar. (We use a menubar for horizontal layout navigation.)
@@ -105,7 +105,7 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
 
     // If the item has nested items, render it with a collapsible dropdown.
     if (item.items) {
-      const isChildActive = item.items.some((child) => 
+      const isChildActive = item.items.some((child) =>
         "href" in child && child.href && pathname.includes(child.href)
       )
 
@@ -140,8 +140,8 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
                       asChild
                       className={cn(
                         "h-8 rounded-lg transition-all duration-200 px-3",
-                        isSubActive 
-                          ? "bg-primary/10 text-primary font-semibold shadow-[inset_0_0_0_1px_rgba(var(--primary),0.2)]" 
+                        isSubActive
+                          ? "bg-primary/10 text-primary font-semibold shadow-[inset_0_0_0_1px_rgba(var(--primary),0.2)]"
                           : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                       )}
                     >
@@ -194,7 +194,7 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
         {isMobile && (
           <div className="flex flex-col gap-6 mb-2">
             <div className="flex items-center justify-between px-1">
-               <ProjectSwitcher teams={teams} />
+              <ProjectSwitcher />
             </div>
 
             <div className="flex flex-col gap-3">
@@ -211,8 +211,8 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
                       onClick={() => setOpenMobile(false)}
                       className={cn(
                         "flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 border",
-                        isActive 
-                          ? "bg-primary/10 border-primary/20 text-primary shadow-sm" 
+                        isActive
+                          ? "bg-primary/10 border-primary/20 text-primary shadow-sm"
                           : "bg-muted/30 border-transparent text-muted-foreground hover:bg-muted/50"
                       )}
                     >
