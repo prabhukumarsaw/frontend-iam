@@ -43,50 +43,62 @@ export function SidebarPrimary({
   const pathname = usePathname()
 
   return (
-    <div className="flex flex-col items-center w-16 h-svh bg-sidebar/95 backdrop-blur-xl border-r border-sidebar-border z-30 fixed left-0 top-0 py-4 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.05)]">
-      {/* Logo */}
-      <Link href="/" className="mb-8 h-10 w-10 flex items-center justify-center rounded-xl bg-primary/10 hover:bg-primary/20 transition-all duration-300 hover:scale-105 shadow-sm border border-primary/20">
-        <Image
-          src="/images/icons/shadboard.svg"
-          alt="Logo"
-          height={28}
-          width={28}
-          className="dark:invert drop-shadow-sm"
-        />
-      </Link>
+    <div className="flex flex-col items-center w-16 h-svh bg-sidebar/95 backdrop-blur-3xl border-r border-sidebar-border z-50 fixed left-0 top-0 py-6 shadow-[1px_0_0_0_rgba(0,0,0,0.1),8px_0_24px_-8px_rgba(0,0,0,0.05)]">
+      {/* Logo Section - Brand Identity */}
+      <div className="mb-8 relative group">
+        <Link 
+          href="/" 
+          className="h-11 w-11 flex items-center justify-center rounded-[14px] bg-primary shadow-[0_8px_16px_-6px_rgba(var(--primary),0.4)] hover:shadow-[0_12px_20px_-8px_rgba(var(--primary),0.5)] active:scale-95 transition-all duration-500 ease-out"
+        >
+          <Image
+            src="/images/icons/shadboard.svg"
+            alt="Logo"
+            height={26}
+            width={26}
+            className="invert opacity-90 group-hover:opacity-100 transition-opacity"
+          />
+        </Link>
+        {/* Subtle separator glow */}
+        <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 w-8 h-[1px] bg-gradient-to-r from-transparent via-sidebar-border to-transparent blur-[0.5px]" />
+      </div>
 
-      {/* Nav Items */}
-      <div className="flex-1 flex flex-col items-center gap-4 w-full px-2">
+      {/* Nav Items - Premium Workspace Switcher Style */}
+      <div className="flex-1 flex flex-col items-center gap-2.5 w-full px-2.5 overflow-y-auto no-scrollbar py-2">
         {primaryNavItems.map((item) => {
           const isActive = pathname.startsWith(item.href.split("/").slice(0, 2).join("/"))
+          
           return (
-            <Tooltip key={item.label}>
+            <Tooltip key={item.label} delayDuration={0}>
               <TooltipTrigger asChild>
-                <div className="relative group flex items-center justify-center w-full">
-                  {/* Active Indicator - Premium Gradient Pill */}
-                  {isActive && (
-                    <div className="absolute left-0 w-1 h-6 bg-gradient-to-b from-primary/40 via-primary to-primary/40 rounded-r-full shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
-                  )}
+                <div className="relative flex items-center justify-center w-full group py-0.5">
+                  {/* Premium Indicator Pill - Discord inspired smoothing */}
+                  <div 
+                    className={cn(
+                      "absolute -left-2.5 w-1.5 rounded-r-full bg-primary transition-all duration-300 ease-in-out shadow-[2px_0_8px_rgba(var(--primary),0.4)]",
+                      isActive ? "h-8 opacity-100" : "h-2 opacity-0 group-hover:opacity-60 group-hover:h-5"
+                    )} 
+                  />
+                  
                   <Button
                     variant="ghost"
                     size="icon"
                     className={cn(
-                      "size-10 rounded-xl transition-all duration-300 relative",
+                      "size-11 transition-all duration-500 rounded-[22px] hover:rounded-[15px] relative group-active:scale-90",
                       isActive 
-                        ? "bg-primary text-primary-foreground shadow-[0_8px_16px_-4px_rgba(var(--primary),0.3)] scale-105" 
-                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:scale-110"
+                        ? "rounded-[14px] bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-100" 
+                        : "text-muted-foreground/80 hover:bg-primary/10 hover:text-primary"
                     )}
                     asChild
                   >
                     <Link href={item.href}>
-                      <item.icon className={cn("size-5 transition-transform duration-300", isActive && "scale-110")} />
+                      <item.icon className={cn("size-[22px] transition-all duration-300", isActive ? "scale-105" : "group-hover:scale-110")} />
                       <span className="sr-only">{item.label}</span>
                     </Link>
                   </Button>
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={10}>
-                <p className="font-medium">{item.label}</p>
+              <TooltipContent side="right" sideOffset={16} className="bg-foreground text-background font-bold text-[11px] uppercase tracking-[0.1em] px-3 py-2 rounded-lg border-none shadow-xl">
+                <p>{item.label}</p>
               </TooltipContent>
             </Tooltip>
           )
@@ -94,10 +106,15 @@ export function SidebarPrimary({
       </div>
 
       {/* Profile/Bottom Actions */}
-      <div className="mt-auto flex flex-col items-center gap-4 pb-2">
-        <div className="h-px w-8 bg-sidebar-border mb-2" />
-        <UserDropdown dictionary={dictionary} locale={locale} />
+      <div className="mt-auto flex flex-col items-center gap-5 pt-4 border-t border-sidebar-border/30 w-full px-2">
+        <div className="relative group cursor-pointer active:scale-95 transition-transform duration-300">
+          <UserDropdown dictionary={dictionary} locale={locale} />
+          {/* Online Indicator */}
+          <div className="absolute bottom-0 right-0 size-3 bg-emerald-500 border-2 border-sidebar-background rounded-full shadow-sm shadow-emerald-500/20" />
+        </div>
       </div>
     </div>
   )
 }
+
+

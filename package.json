@@ -8,9 +8,9 @@
     "url": "https://github.com/prabhukumarsaw"
   },
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack --port 3131",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --port 3131",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "format": "prettier --ignore-path .gitignore --write ."
