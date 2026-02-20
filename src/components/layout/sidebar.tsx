@@ -71,7 +71,7 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
     return navigationsData.find(nav => {
       const section = nav.title.toLowerCase()
       const path = pathname.toLowerCase()
-      
+
       const hasPathmatch = (items: (NavigationRootItem | NavigationNestedItem)[]): boolean => {
         return items.some(item => {
           if ("href" in item && item.href && pathname.startsWith(item.href)) return true
@@ -84,10 +84,11 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
       if (path.includes("/dashboards") && section === "dashboards") return true
       if (path.includes("/pages") && section === "pages") return true
       if (path.includes("/apps") && section === "apps") return true
+      if (path.includes("/panel") && section === "panel") return true
       if (
         (path.includes("/ui") || path.includes("/colors") || path.includes("/typography") ||
-         path.includes("/extended-ui") || path.includes("/forms") || path.includes("/tables") ||
-         path.includes("/charts") || path.includes("/icons") || path.includes("/cards")) &&
+          path.includes("/extended-ui") || path.includes("/forms") || path.includes("/tables") ||
+          path.includes("/charts") || path.includes("/icons") || path.includes("/cards")) &&
         (section === "ui system" || section === "design system")
       ) return true
       if (path.includes("/auth") && section === "security") return true
@@ -107,7 +108,7 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
       return (
         <Collapsible className="group/collapsible w-full" defaultOpen={isChildActive}>
           <CollapsibleTrigger asChild>
-            <SidebarMenuButton 
+            <SidebarMenuButton
               className={cn(
                 "w-full justify-between transition-all duration-300 rounded-xl px-3.5 py-2.5",
                 isChildActive ? "bg-primary/[0.03] text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
@@ -152,8 +153,8 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
                     >
                       <Link href={subItem.href || "#"} onClick={() => setOpenMobile(false)}>
                         <div className="flex items-center justify-between w-full">
-                           <span className="text-[13px]">{subItem.title}</span>
-                           {isSubActive && <div className="size-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.6)]" />}
+                          <span className="text-[13px]">{subItem.title}</span>
+                          {isSubActive && <div className="size-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.6)]" />}
                         </div>
                       </Link>
                     </SidebarMenuButton>
@@ -172,8 +173,8 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
         isActive={isActive}
         className={cn(
           "h-11 transition-all duration-300 rounded-xl px-3.5",
-          isActive 
-            ? "bg-primary/10 text-primary font-bold shadow-[inset_0_0_0_1px_rgba(var(--primary),0.1)]" 
+          isActive
+            ? "bg-primary/10 text-primary font-bold shadow-[inset_0_0_0_1px_rgba(var(--primary),0.1)]"
             : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
         )}
       >
@@ -208,45 +209,45 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
       <SidebarHeader className="px-6 pt-8 pb-4 flex flex-col gap-6">
         {/* Mobile View Enhancements */}
         {isMobile && (
-           <div className="flex flex-col gap-8 mb-4">
-              <ProjectSwitcher />
-              <div className="flex flex-col gap-4">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/30 px-1">
-                  Workspace Sections
-                </span>
-                <div className="grid grid-cols-4 gap-3">
-                  {primaryNavItems.map((item) => {
-                    const isActive = pathname.startsWith(item.href.split("/").slice(0, 2).join("/"))
-                    return (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        onClick={() => setOpenMobile(false)}
-                        className={cn(
-                          "flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-500 border aspect-square",
-                          isActive
-                            ? "bg-primary text-primary-foreground border-primary shadow-xl shadow-primary/30 scale-105"
-                            : "bg-muted/40 border-transparent text-muted-foreground hover:bg-muted/60"
-                        )}
-                      >
-                        <item.icon className="size-6 mb-1.5" />
-                        <span className="text-[9px] font-black truncate w-full text-center uppercase tracking-tighter">{item.label}</span>
-                      </Link>
-                    )
-                  })}
-                </div>
+          <div className="flex flex-col gap-8 mb-4">
+            <ProjectSwitcher />
+            <div className="flex flex-col gap-4">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/30 px-1">
+                Workspace Sections
+              </span>
+              <div className="grid grid-cols-4 gap-3">
+                {primaryNavItems.map((item) => {
+                  const isActive = pathname.startsWith(item.href.split("/").slice(0, 2).join("/"))
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      onClick={() => setOpenMobile(false)}
+                      className={cn(
+                        "flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-500 border aspect-square",
+                        isActive
+                          ? "bg-primary text-primary-foreground border-primary shadow-xl shadow-primary/30 scale-105"
+                          : "bg-muted/40 border-transparent text-muted-foreground hover:bg-muted/60"
+                      )}
+                    >
+                      <item.icon className="size-6 mb-1.5" />
+                      <span className="text-[9px] font-black truncate w-full text-center uppercase tracking-tighter">{item.label}</span>
+                    </Link>
+                  )
+                })}
               </div>
+            </div>
           </div>
         )}
 
         {/* Section Title with subtle glow */}
         <div className="flex items-center justify-between group">
-           <div className="flex items-center gap-2">
-              <div className="w-1 h-3 rounded-full bg-primary" />
-              <span className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground/80 group-hover:text-primary transition-colors">
-                {activePrimarySection ? activePrimarySection.title : "Navigation"}
-              </span>
-           </div>
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-3 rounded-full bg-primary" />
+            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground/80 group-hover:text-primary transition-colors">
+              {activePrimarySection ? activePrimarySection.title : "Navigation"}
+            </span>
+          </div>
         </div>
       </SidebarHeader>
 
@@ -262,34 +263,34 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
             </SidebarMenu>
           ) : (
             <div className="flex flex-col items-center justify-center h-60 text-center px-8 opacity-40 space-y-4">
-               <div className="size-12 rounded-full bg-muted/50 flex items-center justify-center">
-                  <DynamicIcon name="LayoutGrid" className="size-6" />
-               </div>
-               <p className="text-[13px] font-medium text-muted-foreground leading-relaxed">
-                  Select a module from the dashboard rail to get started.
-               </p>
+              <div className="size-12 rounded-full bg-muted/50 flex items-center justify-center">
+                <DynamicIcon name="LayoutGrid" className="size-6" />
+              </div>
+              <p className="text-[13px] font-medium text-muted-foreground leading-relaxed">
+                Select a module from the dashboard rail to get started.
+              </p>
             </div>
           )}
         </SidebarContent>
       </ScrollArea>
-      
+
       {/* Dynamic Footer Status */}
       <SidebarFooter className="p-5 mt-auto">
-         <div className="rounded-[20px] bg-primary/[0.03] border border-primary/5 p-4 group cursor-default hover:bg-primary/[0.05] transition-colors">
-            <div className="flex items-center justify-between mb-2">
-               <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Core Engine</p>
-               <div className="size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)] animate-pulse" />
+        <div className="rounded-[20px] bg-primary/[0.03] border border-primary/5 p-4 group cursor-default hover:bg-primary/[0.05] transition-colors">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">Core Engine</p>
+            <div className="size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)] animate-pulse" />
+          </div>
+          <div className="flex items-center gap-2.5">
+            <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <DynamicIcon name="ShieldCheck" className="size-4" />
             </div>
-            <div className="flex items-center gap-2.5">
-               <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                  <DynamicIcon name="ShieldCheck" className="size-4" />
-               </div>
-               <div className="flex flex-col">
-                  <span className="text-xs font-bold text-foreground/80 leading-none">Security Active</span>
-                  <span className="text-[10px] text-muted-foreground font-medium mt-1">v1.28.4 build stable</span>
-               </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-foreground/80 leading-none">Security Active</span>
+              <span className="text-[10px] text-muted-foreground font-medium mt-1">v1.28.4 build stable</span>
             </div>
-         </div>
+          </div>
+        </div>
       </SidebarFooter>
     </SidebarWrapper>
   )

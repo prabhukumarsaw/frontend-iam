@@ -30,7 +30,7 @@ export const primaryNavItems = [
   { icon: FileText, label: "Pages", href: "/pages/landing" },
   { icon: LayoutGrid, label: "Apps", href: "/apps/chat" },
   { icon: Palette, label: "UI System", href: "/typography" },
-  { icon: ShieldCheck, label: "Security", href: "/auth/login" },
+  { icon: ShieldCheck, label: "Panel", href: "/panel/account/profile" },
 ]
 
 export function SidebarPrimary({
@@ -46,8 +46,8 @@ export function SidebarPrimary({
     <div className="flex flex-col items-center w-16 h-svh bg-sidebar/95 backdrop-blur-3xl border-r border-sidebar-border z-50 fixed left-0 top-0 py-6 shadow-[1px_0_0_0_rgba(0,0,0,0.1),8px_0_24px_-8px_rgba(0,0,0,0.05)]">
       {/* Logo Section - Brand Identity */}
       <div className="mb-8 relative group">
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="h-11 w-11 flex items-center justify-center rounded-[14px] bg-primary shadow-[0_8px_16px_-6px_rgba(var(--primary),0.4)] hover:shadow-[0_12px_20px_-8px_rgba(var(--primary),0.5)] active:scale-95 transition-all duration-500 ease-out"
         >
           <Image
@@ -66,26 +66,26 @@ export function SidebarPrimary({
       <div className="flex-1 flex flex-col items-center gap-2.5 w-full px-2.5 overflow-y-auto no-scrollbar py-2">
         {primaryNavItems.map((item) => {
           const isActive = pathname.startsWith(item.href.split("/").slice(0, 2).join("/"))
-          
+
           return (
             <Tooltip key={item.label} delayDuration={0}>
               <TooltipTrigger asChild>
                 <div className="relative flex items-center justify-center w-full group py-0.5">
                   {/* Premium Indicator Pill - Discord inspired smoothing */}
-                  <div 
+                  <div
                     className={cn(
                       "absolute -left-2.5 w-1.5 rounded-r-full bg-primary transition-all duration-300 ease-in-out shadow-[2px_0_8px_rgba(var(--primary),0.4)]",
                       isActive ? "h-8 opacity-100" : "h-2 opacity-0 group-hover:opacity-60 group-hover:h-5"
-                    )} 
+                    )}
                   />
-                  
+
                   <Button
                     variant="ghost"
                     size="icon"
                     className={cn(
                       "size-11 transition-all duration-500 rounded-[22px] hover:rounded-[15px] relative group-active:scale-90",
-                      isActive 
-                        ? "rounded-[14px] bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-100" 
+                      isActive
+                        ? "rounded-[14px] bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-100"
                         : "text-muted-foreground/80 hover:bg-primary/10 hover:text-primary"
                     )}
                     asChild

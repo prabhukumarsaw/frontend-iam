@@ -104,7 +104,7 @@ export const navigationsData: NavigationType[] = [
           },
         ],
       },
-    
+
     ],
   },
   {
@@ -528,23 +528,24 @@ export const navigationsData: NavigationType[] = [
     ],
   },
   {
-    title: "Security",
+    title: "Panel",
     items: [
       {
-        title: "Sign In",
-        href: "/auth/login",
-        iconName: "LogIn",
+        title: "Workspaces",
+        href: "/panel/workspaces",
+        iconName: "Building2",
       },
       {
-        title: "Sign Up",
-        href: "/auth/register",
+        title: "Teams",
+        href: "/panel/teams",
+        iconName: "Users",
+      },
+      {
+        title: "Roles",
+        href: "/panel/roles",
         iconName: "UserPlus",
       },
-      {
-        title: "Forgot Password",
-        href: "/auth/forgot-password",
-        iconName: "KeyRound",
-      },
+
     ],
   },
 ]

@@ -28,13 +28,13 @@ export function VerticalLayout({
       {/* Main Container - Header stays top, Sidebar and Content below */}
       <div className="flex-1 flex flex-col min-w-0 md:pl-16 relative">
         <VerticalLayoutHeader dictionary={dictionary} />
-        
+
         <div className="flex flex-1 overflow-hidden relative">
           <Sidebar dictionary={dictionary} />
-          
+
           {/* Content Area - Premium glass look */}
           <div className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-muted/30 dark:bg-muted/10 transition-colors duration-300">
-            <main className="flex-1 p-6 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <main className="flex-1 p-2 md:p-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
               <div className="max-w-[1600px] mx-auto">
                 {children}
               </div>
