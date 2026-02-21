@@ -1,0 +1,6 @@
+﻿src/app/(unlocalized)/layout.tsx(45,48): error TS2322: Type '{ children: (ReactNode | Element)[]; locale: "en"; direction: "ltr"; session: null; }' is not assignable to type 'IntrinsicAttributes & Readonly<{ locale: "en" | "hi"; direction: DirectionType; children: ReactNode; }>'.
+  Property 'session' does not exist on type 'IntrinsicAttributes & Readonly<{ locale: "en" | "hi"; direction: DirectionType; children: ReactNode; }>'.
+src/app/[lang]/(dashboard-layout)/panel/workspaces/_components/tenant-table-toolbar.tsx(8,38): error TS2307: Cannot find module '@/components/ui/data-table/data-table-view-options' or its corresponding type declarations.
+src/components/layout/customizer.tsx(217,32): error TS2367: This comparison appears to be unintentional because the types '"ltr"' and '"rtl"' have no overlap.
+src/components/layout/customizer.tsx(218,54): error TS2345: Argument of type '"ar"' is not assignable to parameter of type '"en" | "hi"'.
+src/lib/prisma.ts(1,10): error TS2305: Module '"@prisma/client"' has no exported member 'PrismaClient'.

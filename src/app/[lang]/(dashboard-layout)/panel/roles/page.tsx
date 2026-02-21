@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { AllUsersList } from "./_components/all-users-list"
-import { GlobalUserForm } from "./_components/global-user-form"
+import { RolesList } from "./_components/roles-list"
+import { RoleForm } from "./_components/role-form"
 import { Button } from "@/components/ui/button"
-import { Plus, Users, LayoutDashboard } from "lucide-react"
+import { Plus, Shield, Terminal, Key, Sparkles } from "lucide-react"
 import {
     Dialog,
     DialogContent,
@@ -15,8 +15,9 @@ import {
 } from "@/components/ui/dialog"
 import { PageHeader } from "@/components/layout/page-header"
 
-export default function GlobalUsersPage() {
+export default function RolesPage() {
     const [isCreateOpen, setIsCreateOpen] = useState(false)
+    const [refreshSignal, setRefreshSignal] = useState(0)
 
     const headerActions = (
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -26,69 +27,65 @@ export default function GlobalUsersPage() {
                 >
                     <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                     <Plus className="h-4 w-4 relative z-10" />
-                    <span className="relative z-10">Provision Identity</span>
+                    <span className="relative z-10">Deploy Archetype</span>
+                    <Sparkles className="h-3 w-3 text-primary-foreground/50 ml-0.5 group-hover:animate-pulse" />
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-5xl p-0 overflow-hidden bg-background/95 backdrop-blur-xl border-muted/20 gap-0 rounded-[2.5rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.4)]">
                 <div className="flex flex-col md:flex-row h-full max-h-[90vh]">
-                    {/* Left Sidebar Context */}
-                    <div className="hidden md:flex flex-col w-[320px] bg-muted/20 border-r border-muted/10 p-10 pt-16 relative overflow-hidden shrink-0">
+                    {/* Intelligence Panel */}
+                    <div className="hidden md:flex flex-col w-[340px] bg-muted/20 border-r border-muted/10 p-10 pt-16 relative overflow-hidden shrink-0">
                         <div className="absolute top-0 right-0 p-40 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
                         <div className="mb-12 relative z-10">
                             <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 mb-8 shadow-sm">
-                                <Users className="h-8 w-8 text-primary" />
+                                <Terminal className="h-8 w-8 text-primary" />
                             </div>
-                            <DialogTitle className="text-3xl font-black tracking-tighter text-foreground leading-[1.1] mb-4">Provision<br />Identity</DialogTitle>
-                            <DialogDescription className="text-[13px] text-muted-foreground leading-relaxed font-medium opacity-80 mt-2">
-                                Create a new cross-tenant identity record. Ensure the correct target workspace is selected.
+                            <DialogTitle className="text-3xl font-black tracking-tight text-foreground leading-[1.1] mb-4">Initialize<br />Identity Blueprint</DialogTitle>
+                            <DialogDescription className="text-[13px] text-muted-foreground leading-relaxed font-medium opacity-80">
+                                Declare a new operational identity within the system registry. Connect with permissions to define behavior.
                             </DialogDescription>
                         </div>
 
                         <div className="space-y-8 relative z-10 mt-4">
                             <div className="space-y-3">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-                                    <span className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">Global Registry</span>
+                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)] transition-all animate-pulse" />
+                                    <span className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">Logic Layer</span>
                                 </div>
                                 <p className="text-[11px] text-muted-foreground leading-relaxed pl-4 border-l-2 border-primary/20 font-medium">
-                                    Identities created here require explicit workspace assignment for permissions tracking.
+                                    Roles acts as a collection of permissions. Assigning a role to a user grants them the cumulative power of all attached policies.
                                 </p>
                             </div>
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-slate-500/60" />
-                                    <span className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">Role Architecture</span>
-                                </div>
-                                <p className="text-[11px] text-muted-foreground leading-relaxed pl-4 border-l-2 border-muted/30 font-medium">
-                                    Attach specific environment roles depending on operational needs. Available roles automatically map after picking a workspace.
-                                </p>
-                            </div>
+
                         </div>
-                        <div className="mt-auto pt-16 relative z-10 hidden md:block">
+
+                        <div className="mt-auto pt-16 relative z-10">
                             <div className="p-5 rounded-2xl bg-card border border-muted/30 shadow-xl backdrop-blur-md">
                                 <div className="flex items-center gap-3 mb-3">
-                                    <LayoutDashboard className="h-4 w-4 text-primary" />
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Environment Tip</p>
+                                    <Key className="h-4 w-4 text-primary" />
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Security Standard</p>
                                 </div>
                                 <p className="text-[10px] text-muted-foreground leading-relaxed font-bold tracking-tight italic">
-                                    "You can manage multi-workspace scaling by configuring SSO policies inside workspace settings."
+                                    "Maintain minimal privilege by default. Group atomic functions into logical roles."
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex-1 p-8 sm:p-12 bg-background relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+                    {/* Action Panel */}
+                    <div className="flex-1 p-6 sm:p-10 bg-background relative max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <DialogHeader className="mb-10 md:hidden">
-                            <DialogTitle className="text-2xl font-black tracking-tight">Provision Identity</DialogTitle>
+                            <DialogTitle className="text-2xl font-black tracking-tight">Provision Archetype</DialogTitle>
                             <DialogDescription className="text-sm mt-2 font-medium">
-                                Create a new cross-tenant identity record.
+                                Initialize a new security gate for your ecosystem.
                             </DialogDescription>
                         </DialogHeader>
 
-                        <GlobalUserForm
+                        <RoleForm
                             onSuccess={() => {
                                 setIsCreateOpen(false)
+                                setRefreshSignal(s => s + 1)
                             }}
                             onCancel={() => setIsCreateOpen(false)}
                         />
@@ -101,15 +98,15 @@ export default function GlobalUsersPage() {
     return (
         <div className="flex flex-col gap-10 min-h-screen pb-20 px-4 md:px-0 animate-in fade-in duration-1000">
             <PageHeader
-                title="All Users"
-                description="Manage platform users and accounts across all environments and workspaces. Govern access profiles and monitor activity from a unified registry."
-                badge="Platform Identities"
-                icon={Users}
+                title="Role Architect"
+                description="Design granular security archetypes by mapping atomic permissions to functional roles. Govern user visibility and operational reach across the platform ecosystem."
+                badge="System Configuration"
+                icon={Shield}
                 actions={headerActions}
             />
 
             <div className="flex-1 min-w-0">
-                <AllUsersList />
+                <RolesList key={refreshSignal} />
             </div>
         </div>
     )

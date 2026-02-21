@@ -2,6 +2,7 @@
 
 import { Edit, MoreHorizontal, Trash, Copy, Eye } from "lucide-react"
 import { Row } from "@tanstack/react-table"
+import { useRouter, useParams } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -15,15 +16,15 @@ import {
 interface TenantTableRowActionsProps<TData> {
     row: Row<TData>
     onEdit: (data: TData) => void
-    onView: (data: TData) => void
 }
 
 export function TenantTableRowActions<TData>({
     row,
     onEdit,
-    onView,
 }: TenantTableRowActionsProps<TData>) {
-    const tenant = row.original
+    const tenant = row.original as any
+    const router = useRouter()
+    const params = useParams()
 
     return (
         <DropdownMenu>
@@ -36,21 +37,22 @@ export function TenantTableRowActions<TData>({
                     <span className="sr-only">Open menu</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[160px]">
-                <DropdownMenuItem onClick={() => onView(tenant)}>
+            <DropdownMenuContent align="end" className="w-[180px]">
+                <DropdownMenuItem onClick={() => router.push(`/${params.lang}/panel/workspaces/${tenant.id}`)}>
                     <Eye className="mr-2 h-3.5 w-3.5" />
                     View Details
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => onEdit(tenant)}>
                     <Edit className="mr-2 h-3.5 w-3.5" />
                     Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigator.clipboard.writeText((tenant as any).id)}>
+                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(tenant.id)}>
                     <Copy className="mr-2 h-3.5 w-3.5" />
                     Copy ID
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem disabled>
+                <DropdownMenuItem disabled className="text-destructive focus:text-destructive">
                     <Trash className="mr-2 h-3.5 w-3.5" />
                     Delete
                 </DropdownMenuItem>

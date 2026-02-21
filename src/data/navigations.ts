@@ -545,6 +545,16 @@ export const navigationsData: NavigationType[] = [
         href: "/panel/roles",
         iconName: "UserPlus",
       },
+      {
+        title: "Menus",
+        href: "/panel/menus",
+        iconName: "Menu",
+      },
+      {
+        title: "Permissions",
+        href: "/panel/permissions",
+        iconName: "UserCog",
+      },
 
     ],
   },

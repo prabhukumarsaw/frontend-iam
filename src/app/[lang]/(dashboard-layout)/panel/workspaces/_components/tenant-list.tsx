@@ -8,11 +8,10 @@ import { TenantTable } from "./tenant-table"
 
 interface TenantListProps {
     onEdit: (tenant: any) => void
-    onView: (tenant: any) => void
     refreshSignal: number
 }
 
-export function TenantList({ onEdit, onView, refreshSignal }: TenantListProps) {
+export function TenantList({ onEdit, refreshSignal }: TenantListProps) {
     const [tenants, setTenants] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
@@ -40,7 +39,7 @@ export function TenantList({ onEdit, onView, refreshSignal }: TenantListProps) {
         <div className="space-y-8">
             <TenantStats tenants={tenants} />
             <div className="space-y-4">
-                <TenantTable data={tenants} onEdit={onEdit} onView={onView} />
+                <TenantTable data={tenants} onEdit={onEdit} />
             </div>
         </div>
     )

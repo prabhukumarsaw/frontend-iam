@@ -182,7 +182,32 @@ export function getAbsoluteUrl(path: string | null | undefined): string | undefi
   if (path.startsWith("http") || path.startsWith("blob:") || path.startsWith("data:")) {
     return path
   }
-  const baseUrl = DEFAULT_API_BASE_URL.replace(/\/$/, "")
-  return `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`
+
+  const baseUrl = DEFAULT_API_BASE_URL.trim().replace(/\/$/, "")
+
+  // Extract path from base URL to check for duplication
+  // e.g. baseUrl = http://localhost:5177/api/v1, prefix = /api/v1
+  let prefix = "";
+  try {
+    prefix = new URL(baseUrl).pathname.replace(/\/$/, "");
+  } catch (e) {
+    // If baseUrl is not a full URL (e.g. just /api/v1)
+    prefix = baseUrl.replace(/^(?:https?:\/\/[^\/]+)?/, "").replace(/\/$/, "");
+  }
+
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
+  if (prefix && normalizedPath.startsWith(prefix)) {
+    // Path already includes prefix, append to origin
+    try {
+      const origin = new URL(baseUrl).origin;
+      return `${origin}${normalizedPath}`;
+    } catch (e) {
+      // Fallback if origin cannot be determined
+      return normalizedPath;
+    }
+  }
+
+  return `${baseUrl}${normalizedPath}`
 }
 
