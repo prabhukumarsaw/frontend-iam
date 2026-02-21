@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils"
 import {
     flexRender,
     getCoreRowModel,
+    getExpandedRowModel,
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
@@ -56,6 +57,7 @@ export function MenusList() {
     const [columnFilters, setColumnFilters] = useState<any[]>([])
     const [columnVisibility, setColumnVisibility] = useState<any>({})
     const [rowSelection, setRowSelection] = useState({})
+    const [expanded, setExpanded] = useState({})
 
     // Filters
     const [search, setSearch] = useState("")
@@ -81,14 +83,39 @@ export function MenusList() {
         setIsEditOpen(true)
     }
 
+    async function handleToggleStatus(menu: any) {
+        try {
+            setLoading(true)
+            await apiRequest(`/menus/${menu.id}`, {
+                method: "PUT",
+                body: { isActive: !menu.isActive }
+            })
+            toast({
+                title: menu.isActive ? "Node Suspended" : "Node Reactivated",
+                description: `The navigation node has been ${menu.isActive ? "deactivated" : "successfully online"}.`,
+            })
+            fetchMenus()
+        } catch (error) {
+            toast({
+                title: "Protocol Fault",
+                description: "Failed to update node status.",
+                variant: "destructive"
+            })
+        } finally {
+            setLoading(false)
+        }
+    }
+
     async function handleDelete(menu: any) {
-        if (!window.confirm("Confirm destruction of this integration node? Children will be deleted.")) return
+        // In a real SaaS product, we'd use a custom AlertDialog here. 
+        // For now, I'll keep the logic but clean up the messaging.
+        if (!window.confirm("CRITICAL: Confirm destruction of this integration node? This action is irreversible and will purge all nested child nodes.")) return
         try {
             setLoading(true)
             await apiRequest(`/menus/${menu.id}`, { method: "DELETE" })
             toast({
                 title: "Node Eradicated",
-                description: "The navigation structural node was successfully removed.",
+                description: "The navigation structural node was successfully removed from the topology.",
             })
             fetchMenus()
         } catch (error) {
@@ -102,11 +129,15 @@ export function MenusList() {
         }
     }
 
-    // Build hierarchical tree
+    // Build hierarchical tree with stability
     const treeData = useMemo(() => {
         const buildTree = (menusList: any[], parentId: string | null = null): any[] => {
             return menusList
-                .filter(m => m.parentId === parentId)
+                .filter(m => {
+                    // Handle both null and undefined for root nodes
+                    if (parentId === null) return !m.parentId
+                    return m.parentId === parentId
+                })
                 .sort((a, b) => (a.order || 0) - (b.order || 0))
                 .map(m => ({
                     ...m,
@@ -142,29 +173,44 @@ export function MenusList() {
         },
         {
             title: "Active Links",
-            value: menus.filter(m => m.path).length,
-            icon: LinkIcon,
-            color: "orange-500",
-            description: "Routable navigation"
+            value: menus.filter(m => m.isActive).length,
+            icon: Activity,
+            color: "emerald-500",
+            description: "Online routing nodes"
         }
     ]
 
+    const [pagination, setPagination] = useState({
+        pageIndex: 0,
+        pageSize: 50, // High density for hierarchical stability
+    })
+
     const table = useReactTable({
         data: treeData,
-        columns: getColumns({ onEdit: handleEdit, onDelete: handleDelete }),
+        columns: getColumns({
+            onEdit: handleEdit,
+            onDelete: handleDelete,
+            onToggleStatus: handleToggleStatus
+        }),
+        getRowId: row => row.id, // Stable IDs
         state: {
             sorting,
             columnFilters,
             columnVisibility,
             rowSelection,
+            expanded,
+            pagination,
         },
         enableRowSelection: true,
         onRowSelectionChange: setRowSelection,
         onSortingChange: setSorting,
+        onExpandedChange: setExpanded,
+        onPaginationChange: setPagination,
         onColumnFiltersChange: setColumnFilters,
         onColumnVisibilityChange: setColumnVisibility,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
+        getExpandedRowModel: getExpandedRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getSubRows: row => row.subRows,

@@ -13,7 +13,7 @@ import {
   ShieldCheck,
 } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+import { cn, isActivePathname } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Tooltip,
@@ -24,14 +24,8 @@ import { UserDropdown } from "./user-dropdown"
 import type { DictionaryType } from "@/lib/get-dictionary"
 import type { LocaleType } from "@/types"
 import Image from "next/image"
-
-export const primaryNavItems = [
-  { icon: LayoutDashboard, label: "Dashboards", href: "/dashboards/analytics" },
-  { icon: FileText, label: "Pages", href: "/pages/landing" },
-  { icon: LayoutGrid, label: "Apps", href: "/apps/chat" },
-  { icon: Palette, label: "UI System", href: "/typography" },
-  { icon: ShieldCheck, label: "Panel", href: "/panel/account/profile" },
-]
+import { useMenus } from "@/hooks/use-menus"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 export function SidebarPrimary({
   dictionary,
@@ -41,6 +35,30 @@ export function SidebarPrimary({
   locale: LocaleType
 }) {
   const pathname = usePathname()
+  const { navigationData, loading } = useMenus()
+
+  // Helper to check if a navigation item or any of its children matches the current path
+  const isItemActive = React.useCallback(
+    (item: any): boolean => {
+      // 1. Direct match (loose to allow sub-pages)
+      if (item.href && isActivePathname(item.href, pathname)) return true
+
+      // 2. Fragment match (e.g., /en/dashboards matches Dashboards section)
+      const segments = pathname.split("/").filter(Boolean)
+      const titleLower = item.title?.toLowerCase()
+
+      // Match segments (e.g., index 1 for /en/dashboards)
+      if (segments.length > 1 && titleLower && segments[1] === titleLower) return true
+      if (segments.length > 2 && titleLower && segments[2] === titleLower) return true
+
+      // 3. Recursive child match
+      if (item.items && item.items.length > 0) {
+        return item.items.some((subItem: any) => isItemActive(subItem))
+      }
+      return false
+    },
+    [pathname]
+  )
 
   return (
     <div className="flex flex-col items-center w-16 h-svh bg-sidebar/95 backdrop-blur-3xl border-r border-sidebar-border z-50 fixed left-0 top-0 py-6 shadow-[1px_0_0_0_rgba(0,0,0,0.1),8px_0_24px_-8px_rgba(0,0,0,0.05)]">
@@ -64,11 +82,11 @@ export function SidebarPrimary({
 
       {/* Nav Items - Premium Workspace Switcher Style */}
       <div className="flex-1 flex flex-col items-center gap-2.5 w-full px-2.5 overflow-y-auto no-scrollbar py-2">
-        {primaryNavItems.map((item) => {
-          const isActive = pathname.startsWith(item.href.split("/").slice(0, 2).join("/"))
+        {navigationData.map((item) => {
+          const isActive = isItemActive(item)
 
           return (
-            <Tooltip key={item.label} delayDuration={0}>
+            <Tooltip key={item.title} delayDuration={0}>
               <TooltipTrigger asChild>
                 <div className="relative flex items-center justify-center w-full group py-0.5">
                   {/* Premium Indicator Pill - Discord inspired smoothing */}
@@ -90,15 +108,15 @@ export function SidebarPrimary({
                     )}
                     asChild
                   >
-                    <Link href={item.href}>
-                      <item.icon className={cn("size-[22px] transition-all duration-300", isActive ? "scale-105" : "group-hover:scale-110")} />
-                      <span className="sr-only">{item.label}</span>
+                    <Link href={item.href || "#"}>
+                      <DynamicIcon name={item.iconName || "LayoutGrid"} className={cn("size-[22px] transition-all duration-300", isActive ? "scale-105" : "group-hover:scale-110")} />
+                      <span className="sr-only">{item.title}</span>
                     </Link>
                   </Button>
                 </div>
               </TooltipTrigger>
               <TooltipContent side="right" sideOffset={16} className="bg-foreground text-background font-bold text-[11px] uppercase tracking-[0.1em] px-3 py-2 rounded-lg border-none shadow-xl">
-                <p>{item.label}</p>
+                <p>{item.title}</p>
               </TooltipContent>
             </Tooltip>
           )

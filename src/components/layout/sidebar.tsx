@@ -13,7 +13,7 @@ import type {
   NavigationRootItem,
 } from "@/types"
 
-import { navigationsData } from "@/data/navigations"
+import { useMenus } from "@/hooks/use-menus"
 
 import { i18n } from "@/configs/i18n"
 import { ensureLocalizedPathname } from "@/lib/i18n"
@@ -43,6 +43,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   Sidebar as SidebarWrapper,
   useSidebar,
 } from "@/components/ui/sidebar"
@@ -50,8 +52,6 @@ import { DynamicIcon } from "@/components/dynamic-icon"
 import { CommandMenu } from "./command-menu"
 import { ProjectSwitcher } from "./project-switcher"
 import { UserDropdown } from "./user-dropdown"
-// import { teams } from "@/configs/teams"
-import { primaryNavItems } from "./sidebar-primary"
 
 export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
   const pathname = usePathname()
@@ -60,145 +60,141 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
   const locale = params.lang as LocaleType
   const { settings } = useSettings()
 
+  const { navigationData, loading } = useMenus()
+
   const isRTL = (i18n.localeDirection[locale as keyof typeof i18n.localeDirection] as string) === "rtl"
   const isHoizontalAndDesktop = settings.layout === "horizontal" && !isMobile
 
 
   if (isHoizontalAndDesktop) return null
 
-  // Optimized Active Section Detection
-  const activePrimarySection = React.useMemo(() => {
-    return navigationsData.find(nav => {
-      const section = nav.title.toLowerCase()
-      const path = pathname.toLowerCase()
+  // Helper to check if a navigation item or any of its children matches the current path
+  const isItemActive = React.useCallback(
+    (item: any): boolean => {
+      // 1. Direct match (loose to allow sub-pages)
+      if (item.href && isActivePathname(item.href, pathname)) return true
 
-      const hasPathmatch = (items: (NavigationRootItem | NavigationNestedItem)[]): boolean => {
-        return items.some(item => {
-          if ("href" in item && item.href && pathname.startsWith(item.href)) return true
-          if (item.items) return hasPathmatch(item.items)
-          return false
-        })
+      // 2. Fragment match (e.g., /en/dashboards matches Dashboards section)
+      const segments = pathname.split("/").filter(Boolean)
+      const titleLower = item.title?.toLowerCase()
+
+      // Match segments (e.g., index 1 for /en/dashboards)
+      if (segments.length > 1 && titleLower && segments[1] === titleLower) return true
+      if (segments.length > 2 && titleLower && segments[2] === titleLower) return true
+
+      // 3. Recursive child match
+      if (item.items && item.items.length > 0) {
+        return item.items.some((subItem: any) => isItemActive(subItem))
+      }
+      return false
+    },
+    [pathname]
+  )
+
+
+  // Fully Dynamic Active Section Detection
+  const activePrimarySection = React.useMemo(() => {
+    if (!navigationData || navigationData.length === 0) return null
+    return navigationData.find((nav) => isItemActive(nav))
+  }, [navigationData, isItemActive])
+
+  const renderMenuItem = React.useCallback(
+    (item: any, depth: number = 0) => {
+      const titleKey = titleCaseToCamelCase(item.title)
+      const title = dictionary.navigation[titleKey as keyof typeof dictionary.navigation] || item.title
+      const labelKey = item.label ? titleCaseToCamelCase(item.label) : null
+      const label = labelKey ? (dictionary.label as any)[labelKey] : undefined
+
+      const isActive = item.href ? isActivePathname(item.href, pathname, true) : false
+      const sectionActive = isItemActive(item)
+      const isSubItem = depth > 0
+
+      // Common content for both MenuButton and SubButton
+      const itemContent = (
+        <div className="flex items-center gap-3 w-full">
+          {item.iconName && depth === 0 && (
+            <div className={cn(
+              "p-1.5 rounded-lg transition-colors",
+              (isActive || sectionActive) ? "bg-primary/10 text-primary" : "bg-muted/50 text-muted-foreground group-hover:bg-muted group-hover:text-foreground"
+            )}>
+              <DynamicIcon name={item.iconName} className="h-4 w-4" />
+            </div>
+          )}
+          <span className={cn(
+            "text-[13.5px] font-semibold tracking-tight transition-colors",
+            (isActive || sectionActive) ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+          )}>
+            {title}
+          </span>
+          {label && (
+            <Badge variant="secondary" className="ms-auto text-[9px] px-1.5 h-4 font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-600 border-none">
+              {label}
+            </Badge>
+          )}
+        </div>
+      )
+
+      if (item.items && item.items.length > 0) {
+        const MenuButtonComp: any = isSubItem ? SidebarMenuSubButton : SidebarMenuButton
+        const MenuItemComp = isSubItem ? SidebarMenuSubItem : SidebarMenuItem
+
+        return (
+          <MenuItemComp key={item.title}>
+            <Collapsible
+              className="group/collapsible w-full"
+              defaultOpen={sectionActive}
+            >
+              <CollapsibleTrigger asChild>
+                <MenuButtonComp
+                  className={cn(
+                    "w-full justify-between transition-all duration-300 rounded-xl px-3.5 py-2.5 h-auto",
+                    sectionActive ? "bg-primary/[0.03] text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  )}
+                >
+                  {itemContent}
+                  <ChevronDown className={cn(
+                    "h-3.5 w-3.5 shrink-0 transition-transform duration-300 opacity-40 group-data-[state=open]/collapsible:rotate-180",
+                    sectionActive && "opacity-100 text-primary"
+                  )} />
+                </MenuButtonComp>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+                <SidebarMenuSub className={cn(
+                  "border-l border-primary/10 space-y-1 mt-1 px-0",
+                  depth === 0 ? "ml-[23px] pl-4" : "ml-4 pl-2"
+                )}>
+                  {item.items.map((subItem: any) => renderMenuItem(subItem, depth + 1))}
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </Collapsible>
+          </MenuItemComp>
+        )
       }
 
-      // Explicit section matches
-      if (path.includes("/dashboards") && section === "dashboards") return true
-      if (path.includes("/pages") && section === "pages") return true
-      if (path.includes("/apps") && section === "apps") return true
-      if (path.includes("/panel") && section === "panel") return true
-      if (
-        (path.includes("/ui") || path.includes("/colors") || path.includes("/typography") ||
-          path.includes("/extended-ui") || path.includes("/forms") || path.includes("/tables") ||
-          path.includes("/charts") || path.includes("/icons") || path.includes("/cards")) &&
-        (section === "ui system" || section === "design system")
-      ) return true
-      if (path.includes("/auth") && section === "security") return true
-
-      return hasPathmatch(nav.items)
-    })
-  }, [pathname])
-
-  const renderMenuItem = React.useCallback((item: NavigationRootItem | NavigationNestedItem) => {
-    const title = getDictionaryValue(titleCaseToCamelCase(item.title), dictionary.navigation)
-    const label = item.label ? getDictionaryValue(titleCaseToCamelCase(item.label), dictionary.label) : undefined
-    const isActive = "href" in item ? pathname === item.href : false
-
-    if (item.items) {
-      const isChildActive = item.items.some((child) => "href" in child && child.href && pathname.includes(child.href))
+      const MenuButtonComp: any = isSubItem ? SidebarMenuSubButton : SidebarMenuButton
+      const MenuItemComp = isSubItem ? SidebarMenuSubItem : SidebarMenuItem
 
       return (
-        <Collapsible className="group/collapsible w-full" defaultOpen={isChildActive}>
-          <CollapsibleTrigger asChild>
-            <SidebarMenuButton
-              className={cn(
-                "w-full justify-between transition-all duration-300 rounded-xl px-3.5 py-2.5",
-                isChildActive ? "bg-primary/[0.03] text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                {"iconName" in item && (
-                  <div className={cn(
-                    "p-1.5 rounded-lg transition-colors",
-                    isChildActive ? "bg-primary/10 text-primary" : "bg-muted/50 text-muted-foreground group-hover:bg-muted group-hover:text-foreground"
-                  )}>
-                    <DynamicIcon name={(item as any).iconName} className="h-4 w-4" />
-                  </div>
-                )}
-                <span className={cn(
-                  "text-[13.5px] font-semibold tracking-tight transition-colors",
-                  isChildActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
-                )}>
-                  {title}
-                </span>
-              </div>
-              <ChevronDown className={cn(
-                "h-3.5 w-3.5 shrink-0 transition-transform duration-300 opacity-40 group-data-[state=open]/collapsible:rotate-180",
-                isChildActive && "opacity-100 text-primary"
-              )} />
-            </SidebarMenuButton>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
-            <SidebarMenuSub className="border-l border-primary/10 ml-[23px] pl-4 space-y-1 mt-1">
-              {item.items.map((subItem) => {
-                const isSubActive = pathname === subItem.href
-                return (
-                  <SidebarMenuItem key={subItem.title}>
-                    <SidebarMenuButton
-                      asChild
-                      className={cn(
-                        "h-9 rounded-lg transition-all duration-200 px-3",
-                        isSubActive
-                          ? "bg-primary/5 text-primary font-bold"
-                          : "text-muted-foreground/70 hover:bg-primary/5 hover:text-foreground"
-                      )}
-                    >
-                      <Link href={subItem.href || "#"} onClick={() => setOpenMobile(false)}>
-                        <div className="flex items-center justify-between w-full">
-                          <span className="text-[13px]">{subItem.title}</span>
-                          {isSubActive && <div className="size-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.6)]" />}
-                        </div>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
-            </SidebarMenuSub>
-          </CollapsibleContent>
-        </Collapsible>
+        <MenuItemComp key={item.title}>
+          <MenuButtonComp
+            asChild
+            isActive={isActive}
+            className={cn(
+              "h-11 transition-all duration-300 rounded-xl px-3.5",
+              isActive
+                ? "bg-primary/10 text-primary font-bold shadow-[inset_0_0_0_1px_rgba(var(--primary),0.1)]"
+                : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Link href={item.href || "#"} onClick={() => setOpenMobile(false)}>
+              {itemContent}
+            </Link>
+          </MenuButtonComp>
+        </MenuItemComp>
       )
-    }
-
-    return (
-      <SidebarMenuButton
-        asChild
-        isActive={isActive}
-        className={cn(
-          "h-11 transition-all duration-300 rounded-xl px-3.5",
-          isActive
-            ? "bg-primary/10 text-primary font-bold shadow-[inset_0_0_0_1px_rgba(var(--primary),0.1)]"
-            : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
-        )}
-      >
-        <Link href={"href" in item ? item.href : "#"} onClick={() => setOpenMobile(false)}>
-          <div className="flex items-center gap-3 w-full">
-            {"iconName" in item && (
-              <div className={cn(
-                "p-1.5 rounded-lg transition-colors",
-                isActive ? "bg-primary/10 text-primary" : "bg-muted/50 text-muted-foreground"
-              )}>
-                <DynamicIcon name={(item as any).iconName} className="h-4 w-4" />
-              </div>
-            )}
-            <span className="text-[13.5px] font-semibold tracking-tight">{title}</span>
-            {"label" in item && (
-              <Badge variant="secondary" className="ms-auto text-[9px] px-1.5 h-4 font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-600 border-none">
-                {label}
-              </Badge>
-            )}
-          </div>
-        </Link>
-      </SidebarMenuButton>
-    )
-  }, [pathname, dictionary, setOpenMobile])
+    },
+    [pathname, dictionary, setOpenMobile, isItemActive]
+  )
 
   return (
     <SidebarWrapper
@@ -216,12 +212,12 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
                 Workspace Sections
               </span>
               <div className="grid grid-cols-4 gap-3">
-                {primaryNavItems.map((item) => {
-                  const isActive = pathname.startsWith(item.href.split("/").slice(0, 2).join("/"))
+                {navigationData.map((item) => {
+                  const isActive = isItemActive(item)
                   return (
                     <Link
-                      key={item.label}
-                      href={item.href}
+                      key={item.title}
+                      href={item.href || "#"}
                       onClick={() => setOpenMobile(false)}
                       className={cn(
                         "flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-500 border aspect-square",
@@ -230,8 +226,8 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
                           : "bg-muted/40 border-transparent text-muted-foreground hover:bg-muted/60"
                       )}
                     >
-                      <item.icon className="size-6 mb-1.5" />
-                      <span className="text-[9px] font-black truncate w-full text-center uppercase tracking-tighter">{item.label}</span>
+                      <DynamicIcon name={item.iconName || "LayoutGrid"} className="size-6 mb-1.5" />
+                      <span className="text-[9px] font-black truncate w-full text-center uppercase tracking-tighter">{item.title}</span>
                     </Link>
                   )
                 })}
@@ -255,11 +251,7 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
         <SidebarContent className="gap-2.5 py-4 no-scrollbar">
           {activePrimarySection ? (
             <SidebarMenu className="gap-2">
-              {activePrimarySection.items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  {renderMenuItem(item)}
-                </SidebarMenuItem>
-              ))}
+              {activePrimarySection.items.map((item: any) => renderMenuItem(item))}
             </SidebarMenu>
           ) : (
             <div className="flex flex-col items-center justify-center h-60 text-center px-8 opacity-40 space-y-4">

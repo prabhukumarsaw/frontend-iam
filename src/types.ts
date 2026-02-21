@@ -91,6 +91,8 @@ export type FormatStyleType = "percent" | "duration" | "currency" | "regular"
 export interface NavigationType {
   title: string
   items: NavigationRootItem[]
+  href?: string
+  iconName?: DynamicIconNameType
 }
 
 export type NavigationRootItem =

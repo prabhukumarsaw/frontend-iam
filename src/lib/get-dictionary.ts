@@ -2,16 +2,13 @@
 import "server-only"
 
 import type { LocaleType } from "@/types"
-import enDictionary from "@/data/dictionaries/en.json"
-import hiDictionary from "@/data/dictionaries/hi.json"
-
 const dictionaries = {
-  en: enDictionary,
-  hi: hiDictionary,
-} as const
+  en: () => import("@/data/dictionaries/en.json").then((module) => module.default),
+  hi: () => import("@/data/dictionaries/hi.json").then((module) => module.default),
+}
 
 export async function getDictionary(locale: LocaleType) {
-  return dictionaries[locale]
+  return (dictionaries[locale as keyof typeof dictionaries] || dictionaries.en)()
 }
 
 export type DictionaryType = Awaited<ReturnType<typeof getDictionary>>

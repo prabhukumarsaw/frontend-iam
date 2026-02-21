@@ -235,15 +235,18 @@ export function MenuForm({ onSuccess, onCancel, editData }: MenuFormProps) {
                                                 <SelectValue placeholder="Select Parent Node (Root level implied)" />
                                             </SelectTrigger>
                                         </FormControl>
-                                        <SelectContent className="max-h-[300px]">
-                                            <SelectItem value="root" className="text-[11px] font-bold italic text-muted-foreground/70">Top Level (Root)</SelectItem>
-                                            {allMenus.filter(m => !m.parentId).map((m: any) => (
+                                        <SelectContent className="max-h-[300px] bg-background/95 backdrop-blur-xl border-muted/20 rounded-xl">
+                                            <SelectItem value="root" className="text-[11px] font-bold italic text-muted-foreground/70">Top Level (Root Group)</SelectItem>
+                                            {allMenus.sort((a, b) => a.title.localeCompare(b.title)).map((m: any) => (
                                                 <SelectItem key={m.id} value={m.id} className="text-[11px] font-bold">
-                                                    {m.title}
+                                                    {m.parentId ? `↳ ${m.title}` : m.title}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
+                                    <FormDescription className="text-[9px] font-medium opacity-60">
+                                        Sub-nodes will inherit visibility constraints from their parent by default.
+                                    </FormDescription>
                                     <FormMessage className="text-[9px]" />
                                 </FormItem>
                             )}
@@ -316,7 +319,7 @@ export function MenuForm({ onSuccess, onCancel, editData }: MenuFormProps) {
                                                 <SelectValue placeholder="Isolated / Global" />
                                             </SelectTrigger>
                                         </FormControl>
-                                        <SelectContent>
+                                        <SelectContent className="max-h-[300px] bg-background/95 backdrop-blur-xl border-muted/20 rounded-xl">
                                             <SelectItem value="none" className="text-[11px] font-bold italic text-muted-foreground/70">Isolated / Global</SelectItem>
                                             {modules.map((m: any) => (
                                                 <SelectItem key={m.id} value={m.id} className="text-[11px] font-bold">
